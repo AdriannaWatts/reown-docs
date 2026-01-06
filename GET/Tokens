@@ -1,0 +1,513 @@
+[|{Beefy
+
+    Developer Documentation
+
+Beefy API
+
+Last Update: August 2023
+
+This page provides further details about the functionality and operation of Beefy's REST API, which powers our web application, dashboard and pages on third party sites. 
+
+You can access the API at https://api.beefy.finance/, and the public repository is available on the Beefy GitHub. The API is maintained under the MIT license, with further details available on the GitHub repo.
+Endpoints
+
+Our API offers a range of public endpoints covering the full selection of data required for our web app, backend and dashboard, as well as some third party services. 
+Beefy Vault Endpoints
+
+Endpoints developed for use by the Beefy Application to display vaults' live characteristics and performance to our users. 
+
+Provides live information about each Beefy vault, including retired (eol) vaults.
+
+The information includes fields for the relevant vault's name/ID, chain, token, underlying assets, related contracts and current status. It also includes the "risks" field, which lists the vault's features taken from the matrix of risk factors used to calculate a vault's safety score.
+
+Provides live information about each Beefy vault, including retired (eol) vaults.
+
+The information includes fields for the relevant vault's name/ID, chain, token, underlying assets, related contracts and current status. It also includes the "risks" field, which lists the vault's features taken from the matrix of risk factors used to calculate a vault's safety score.
+
+// Sample response for the /vaults endpoint (e.g. Polygon aTriCrypto3 vault)
+
+{
+  "id": "curve-poly-atricrypto3",
+  "name": "aTriCrypto3",
+  "token": "crvUSDBTCETH3",
+  "tokenAddress": "0xdAD97F7713Ae9437fa9249920eC8507e5FbB23d3",
+  "tokenDecimals": 18,
+  "tokenProviderId": "curve",
+  "earnedToken": "mooCurveATriCrypto3",
+  "earnedTokenAddress": "0x5A0801BAd20B6c62d86C566ca90688A6b9ea1d3f",
+  "earnContractAddress": "0x5A0801BAd20B6c62d86C566ca90688A6b9ea1d3f",
+  "oracle": "lps",
+  "oracleId": "curve-poly-atricrypto3",
+  "status": "active",
+  "platformId": "curve",
+  "assets": [
+    "DAI",
+    "USDC",
+    "USDT",
+    "WBTC",
+    "ETH"
+  ],
+  "strategyTypeId": "multi-lp",
+  "risks": [
+    "COMPLEXITY_LOW",
+    "BATTLE_TESTED",
+    "IL_LOW",
+    "MCAP_LARGE",
+    "PLATFORM_ESTABLISHED",
+    "AUDIT",
+    "CONTRACTS_VERIFIED",
+    "OVER_COLLAT_ALGO_STABLECOIN"
+  ],
+  "addLiquidityUrl": "https://polygon.curve.fi/atricrypto3/deposit",
+  "network": "polygon",
+  "createdAt": 1652662923,
+  "chain": "polygon",
+  "strategy": "0x41D7529b4C9245a50ca6A169d39719DFF117f6CA",
+  "lastHarvest": 1664612723,
+  "pricePerFullShare": "1178961451902175914"
+},
+
+Field Notes:
+
+    id - the unique identifying string assigned to each vault, including separate versions of the same vault.
+
+    tokenAddress - the contract address for the main deposit asset, typically an LP token.
+
+    earnedTokenAddress - the contract of the token which is earned by the strategy used by the vault. For most Beefy vaults, this is the same as the vault contract, because the strategy is autocompounding. For earnings pool vaults (which don't autocompound), this will be the native token of the chain or protocol that the vault relates to.
+
+    earnContractAddress - the address of the Beefy vault contract which handles deposits and withdrawals and issues the mooVault token to users.
+
+    status - shows whether a vault is live ("active") or retired ("eol").
+
+    assets - the underlying assets at the base of the relevant vault's stack (typically the assets included in the LP that the vault is built on).
+
+    strategyTypeID - indicates what type of strategy is being utilised by the vault (e.g. "single" asset, "lp", "multi-lp", etc).
+
+    risks - a list of the vault's applicable features taken from the matrix of factors used to calculate a vault's safety score.
+
+    network - the relevant blockchain that the vault resides on.
+
+    createdAt - the block of the relevant blockchain where the vault was created.
+
+    strategy - the address of the strategy contract currently in use by the vault.
+
+    lastHarvest - the block of the relevant blockchain where the vault was last harvested - i.e. where profits were collected from the strategy (and autocompounded, if applicable).
+
+    pricePerFullShare - the current average price (denominated in the deposit asset, e.g. the underlying LP token) for each whole share of the vault's total issued share capital, reflecting the total value invested into the vault over its life divided by the number of shares of the vault issued.
+
+Provides the current and live annual percentage yield of each Beefy vault.
+
+Provides the current and live annual percentage yield of each Beefy vault.
+
+// Sample response for the /apy endpoint
+
+{
+  ...
+  "balancer-usdc-link-eth-bal-aave": 0.03705509745347668,
+  "balancer-matic-usdc-eth-bal": 0.052770609595836904,
+  "baby-wbnb-busd": 0.1612595689122669,
+  "baby-usdc-wbnb": 0.16031283171896837,
+  "balancer-vst-dai-usdt-usdc": 0.029489187277781825,
+  "balancer-bal-eth": 0.024578537703132453,
+  "curve-matic-stmatic": 0.08866966650936048,
+  "sushi-poly-weth-sx": 0.7135292677781775,
+  "sushi-poly-bct-klima": 0.0007036903322936716,
+}
+
+Field Notes:
+
+    Vault APY - Each field reflects the unique id string of a vault, and returns a value which represents the live APY as a decimal. For instance, "0.037" represents 3.7% APY.
+
+Provides the current and live total value locked of each Beefy vault, which is the sum of the current market capitalisation of all of the assets currently held by the relevant vault, denominated in $USD.
+
+Provides the current and live total value locked of each Beefy vault, which is the sum of the current market capitalisation of all of the assets currently held by the relevant vault, denominated in $USD.
+
+// Sample response from the /tvl endpoint
+
+{
+    ...
+    "optimism-bifi-maxi": 37679.65,
+    "velodrome-wsteth-weth": 295597.74,
+    "beets-lido-shuffle": 101185.39,
+    "beets-yellow-submarine": 5828.15,
+    "beets-its-mai-life": 178994.42,
+    "velodrome-usdc-mim": 488943.72,
+    "velodrome-weth-bifi": 133635.5,
+    ...
+}
+
+External Asset Endpoints
+
+Endpoints developed for use by the Beefy Application to display information about the assets underlying our Beefy vaults to our users.
+
+Provides information on all of the tokens utilised by Beefy, including individual assets and currencies, staked assets and LPs, sorted by the blockchain each is deployed on.
+
+Provides information on all of the tokens utilised by Beefy, including individual assets and currencies, staked assets and LPs, sorted by the blockchain each is deployed on.
+
+// Sample response for /tokens endpoint (e.g. polygon spUSDC LP token)
+
+{
+  "polygon": {
+    "spUSDC": {
+      "name": "Stargate USD Coin LP",
+      "symbol": "spUSDC",
+      "address": "0x1205f31718499dBf1fCa446663B532Ef87481fe1",
+      "decimals": 6
+    },
+    ...
+}
+
+Field Notes:
+
+    name - a string showing the full name of the token associated with the relevant ID.
+
+    symbol - a string showing the symbol assigned to the token by the issuer.
+
+    address - the contract address for the relevant token.
+
+    decimals - the number of decimal permitted for the token by the issuer, representing how divisible it is on chain.
+
+GET /tokens/{blockchain}
+
+For further specificity, you can add a {blockchain} parameter to the /tokens endpoint to return only tokens on a given blockchain (e.g. /tokens/polygon returns only tokens issued on the Polygon blockchain).
+Other Beefy App Endpoints
+
+Endpoints developed for use by the Beefy Application to display other information not relating to individual vaults.
+
+Dashboard Endpoints
+
+Endpoints developed for the Beefy Dashboard to display overarching information about the protocol.
+
+Please note that the Dashboard site and the /earnings endpoint are both no longer actively maintained by Beefy. Though the Dashboard site remains live, it does not reflect every vault that has been implemented and every chain that Beefy has deployed to.
+Databarn Endpoints
+
+Endpoints related to databarn, our historical data indexer. These endpoints are rate limited to maximum 5 requests per seconds. You may also want to try the interactive swagger ui for these endpoints.
+Fetches the investor timeline
+get
+
+Describes all transactions for a given investor
+Query parameters
+addressstring · min: 42 · max: 42
+Pattern: ^0x[a-fA-F0-9]{40}$
+Responses
+200
+
+The investor timeline, list of all deposit and withdraw transaction for a given investor
+application/json
+Response
+object · InvestorTimelineRow[]
+
+The investor timeline, list of all deposit and withdraw transaction for a given investor
+get
+/api/v1/beefy/timeline
+
+GET /api/v1/beefy/timeline?address=text HTTP/1.1
+Host: 
+Accept: */*
+
+200
+
+The investor timeline, list of all deposit and withdraw transaction for a given investor
+
+[
+  {
+    "datetime": "2026-01-06T06:47:52.808Z",
+    "product_key": "text",
+    "display_name": "text",
+    "chain": "arbitrum",
+    "is_eol": true,
+    "is_dashboard_eol": true,
+    "transaction_hash": "text",
+    "share_to_underlying_price": 1,
+    "underlying_to_usd_price": 1,
+    "share_balance": 1,
+    "underlying_balance": 1,
+    "usd_balance": 1,
+    "share_diff": 1,
+    "underlying_diff": 1,
+    "usd_diff": 1
+  }
+]
+
+Fetches all product configurations for a chain
+get
+
+Returns the configuration accounted for in databarn
+Path parameters
+chainstring · enum
+
+Only include produce for this chain
+Possible values: 
+Query parameters
+include_eolboolean
+
+Include EOL (end of life) products, you probably never want to set this to true
+Default: false
+Responses
+200
+
+List of all beefy products, vaults, boosts, governance vaults, etc.
+application/json
+Response
+object · Product[]
+
+List of all beefy products, vaults, boosts, governance vaults, etc.
+get
+/api/v1/beefy/product/{chain}
+
+GET /api/v1/beefy/product/{chain} HTTP/1.1
+Host: 
+Accept: */*
+
+200
+
+List of all beefy products, vaults, boosts, governance vaults, etc.
+
+[
+  {
+    "productKey": "text",
+    "chain": "arbitrum",
+    "productData": {
+      "type": "beefy:vault",
+      "dashboardEol": true,
+      "vault": {
+        "id": "text",
+        "chain": "arbitrum",
+        "token_name": "text",
+        "token_decimals": 1,
+        "contract_address": "text",
+        "want_address": "text",
+        "want_decimals": 1,
+        "eol": true,
+        "eol_date": "2026-01-06T06:47:52.808Z",
+        "assets": [
+          "text"
+        ],
+        "protocol": "text",
+        "protocol_product": "text",
+        "want_price_feed_key": "text"
+      }
+    }
+  }
+]
+
+Fetch a specific product configuration
+get
+
+Find one product configuration by chain and contract address
+Path parameters
+chainstring · enum
+
+Only include products for this chain
+Possible values: 
+contract_addressstring · min: 42 · max: 42
+
+The product contract address
+Pattern: ^0x[a-fA-F0-9]{40}$
+Responses
+200
+
+Default Response
+application/json
+Response
+object · Product
+
+A product definition
+get
+/api/v1/beefy/product/{chain}/{contract_address}
+
+GET /api/v1/beefy/product/{chain}/{contract_address} HTTP/1.1
+Host: 
+Accept: */*
+
+200
+
+Default Response
+
+{
+  "productKey": "text",
+  "chain": "arbitrum",
+  "productData": {
+    "type": "beefy:vault",
+    "dashboardEol": true,
+    "vault": {
+      "id": "text",
+      "chain": "arbitrum",
+      "token_name": "text",
+      "token_decimals": 1,
+      "contract_address": "text",
+      "want_address": "text",
+      "want_decimals": 1,
+      "eol": true,
+      "eol_date": "2026-01-06T06:47:52.808Z",
+      "assets": [
+        "text"
+      ],
+      "protocol": "text",
+      "protocol_product": "text",
+      "want_price_feed_key": "text"
+    }
+  }
+}
+
+Get tvl snapshots in usd for a specific product.
+get
+
+This endpoint returns snapshots of the api /tvls endpoints done every 15 minutes and can be used to request raw historical data but the time range must not exceede 1 week and the result will be truncated to 1000 elements. from_date is inclusive and to_date is exclusive to make is easier to use in loops
+Path parameters
+chainstring · enum
+
+Only include products for this chain
+Possible values: 
+contract_addressstring · min: 42 · max: 42
+
+The product contract address
+Pattern: ^0x[a-fA-F0-9]{40}$
+Query parameters
+from_date_utcstring · date-time
+
+Inclusive date time to fetch data from, interpreted as utc tz
+Example: 2023-01-01T00:00:00
+to_date_utcstring · date-time
+
+Exclusive date time to fetch data to, interpreted as utc tz
+Example: 2023-01-01T00:00:00
+Responses
+200
+
+The raw tvl time series
+application/json
+Responseany of[][]
+
+The raw tvl time series
+get
+/api/v1/beefy/product/{chain}/{contract_address}/tvl
+
+GET /api/v1/beefy/product/{chain}/{contract_address}/tvl?from_date_utc=2026-01-06T06%3A47%3A52.808Z&to_date_utc=2026-01-06T06%3A47%3A52.808Z HTTP/1.1
+Host: 
+Accept: */*
+
+200
+
+The raw tvl time series
+
+[
+  [
+    [
+      "2021-01-01T00:00:00",
+      1234.34
+    ]
+  ]
+]
+
+Get a quick price time series for a given product and time bucket
+get
+
+This endpoint is essentially used for charting and UIs as it provides a simple interface to get the most widely displayed time series.
+Query parameters
+product_keystring · min: 10 · max: 100
+price_typestring · enum
+
+share_to_underlying is the ratio from share token to LP token (ppfs). underlying_to_usd is the ratio from an LP token to USD.
+Possible values: 
+time_bucketstring · enum
+
+Defines a bucket size and a time range like <bucket size>_<time range>. For example, 1d_1M means: 1 month of data aggregated by buckets of 1 day.
+Possible values: 
+Responses
+200
+
+The price time series
+application/json
+Responseany of[][]
+
+The price time series
+get
+/api/v1/price/
+
+GET /api/v1/price/?product_key=text&price_type=share_to_underlying&time_bucket=1h_1d HTTP/1.1
+Host: 
+Accept: */*
+
+200
+
+The price time series
+
+[
+  [
+    [
+      "2021-01-01T00:00:00",
+      "1000.0000012123",
+      "1000.0000012123",
+      "1000.0000012123",
+      "1000.0000012123"
+    ]
+  ]
+]
+
+Get a raw historical time series for a given time range.
+get
+
+This endpoint can be used to request raw historical data but the time range must not exceede a week and the result will be truncated to 1000 elements. from_date is inclusive and to_date is exclusive to make is easier to use in loops
+Query parameters
+product_keystring · min: 10 · max: 100
+price_typestring · enum
+
+share_to_underlying is the ratio from share token to LP token (ppfs). underlying_to_usd is the ratio from an LP token to USD.
+Possible values: 
+from_date_utcstring · date-time
+
+Inclusive date time to fetch data from, interpreted as utc tz
+Example: 2023-01-01T00:00:00
+to_date_utcstring · date-time
+
+Exclusive date time to fetch data to, interpreted as utc tz
+Example: 2023-01-01T00:00:00
+Responses
+200
+
+The raw price time series
+application/json
+Responseany of[][]
+
+The raw price time series
+get
+/api/v1/price/raw
+
+GET /api/v1/price/raw?product_key=text&price_type=share_to_underlying&from_date_utc=2026-01-06T06%3A47%3A52.808Z&to_date_utc=2026-01-06T06%3A47%3A52.808Z HTTP/1.1
+Host: 
+Accept: */*
+
+200
+
+The raw price time series
+
+[
+  [
+    [
+      "2021-01-01T00:00:00",
+      1234,
+      "1000.0000012123"
+    ]
+  ]
+]
+
+Third Party Endpoints
+
+Endpoints required or utilised by third party platforms to display information about Beefy or its products on their sites.
+
+Subgraph
+
+Please note that Beefy does not currently operate or maintain any subgraphs for our protocol. 
+
+Our friends at Messari have developed a subgraph for our presence on BSC chain, which is available at https://api.thegraph.com/subgraphs/name/messari/beefy-finance-bsc, and on The Graph's website (ID: QmfEtMEgjik9FSZdqAmp2DkNFG4M9TK4Go8uyCUj8EVxY6). Beefy has had no role in the development or maintenance of this subgraph. Please direct any questions or requests for assistance in relation to this subgraph directly to Messari.
+Other Data
+
+For any readers seeking further information about Beefy and our protocol's performance, please head to the #📊-beefy-data channel in our Discord server. We'll be happy to answer any questions you may have there and you're welcome to inspect the history of our discussions in that channel for further background into our data work. 
+
+You'll also find in that channel a collection of weekly reports on the breakdown of our $BIFI token across our different chains and vaults, which are lovingly prepared by core contributor EPETE.
+
+Last updated 2 years ago
+
+Was this helpful?
+Beefy API | Beefy}|]✓
